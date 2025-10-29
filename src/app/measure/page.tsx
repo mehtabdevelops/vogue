@@ -32,7 +32,7 @@ const MeasurePage = () => {
     
     console.log('Measurements submitted:', measurements);
     alert('Your avatar measurements have been saved!');
-    router.push('/');
+    router.push('/avatar');
   };
 
   return (
