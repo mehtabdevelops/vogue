@@ -41,6 +41,12 @@ const SignupPage = () => {
     router.push('/measure');
   };
 
+  // 🔥 Guest bypass
+  const handleContinueAsGuest = () => {
+    // You can change this to '/avatar' or any other page in your flow
+    router.push('/measure');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#1a0b15] via-[#2d1123] to-[#54162b] flex items-center justify-center py-12 px-4">
       <div className="max-w-5xl w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -151,8 +157,17 @@ const SignupPage = () => {
               Create Avatar
             </button>
 
+            {/* Continue as Guest */}
+            <button
+              type="button"
+              onClick={handleContinueAsGuest}
+              className="w-full mt-2 bg-transparent border border-white/40 text-white py-3 px-4 rounded-lg font-semibold hover:bg-white/10 transition-all"
+            >
+              Continue as Guest
+            </button>
+
             {/* Login Link */}
-            <div className="text-center">
+            <div className="text-center mt-2">
               <p className="text-gray-300">
                 Already have an account?{' '}
                 <button

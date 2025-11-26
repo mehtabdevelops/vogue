@@ -3,177 +3,170 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
+type MeasureForm = {
+  height: string;
+  weight: string;
+  chest: string;
+  waist: string;
+  hips: string;
+  fitPreference: 'slim' | 'regular' | 'oversized' | '';
+};
+
 const MeasurePage = () => {
   const router = useRouter();
-  const [measurements, setMeasurements] = useState({
-    upperBody: '',
+  const [form, setForm] = useState<MeasureForm>({
+    height: '',
+    weight: '',
+    chest: '',
     waist: '',
-    bottomLength: ''
+    hips: '',
+    fitPreference: '',
   });
 
-  const upperBodySizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
-  const waistSizes = ['24', '26', '28', '30', '32', '34', '36', '38', '40', '42', '46'];
-  const bottomLengths = ['Short (25-27")', 'Regular (28-30")', 'Long (31-33")', 'Extra Long (34+")'];
-
-  const handleSizeChange = (category: string, value: string) => {
-    setMeasurements(prev => ({
-      ...prev,
-      [category]: value
-    }));
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!measurements.upperBody || !measurements.waist || !measurements.bottomLength) {
-      alert('Please select all measurements');
+
+    // super simple validation
+    if (!form.height || !form.weight || !form.chest || !form.waist || !form.hips) {
+      alert('Please fill in all measurements');
       return;
     }
-    
-    console.log('Measurements submitted:', measurements);
-    alert('Your avatar measurements have been saved!');
+    if (!form.fitPreference) {
+      alert('Please choose a fit preference');
+      return;
+    }
+
+    // later: save to backend / context / localStorage
+    console.log('Measurements saved:', form);
+
+    // go to avatar creation
     router.push('/avatar');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a0b15] via-[#2d1123] to-[#54162b] py-12 px-4">
-      {/* Logo at Top Center */}
-      <div className="flex justify-center mb-12">
-        <img 
-          src="/images/3.png" 
-          alt="Vogue Logo" 
-          className="h-40 w-auto object-contain" // Bigger logo
-        />
-      </div>
-
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-        
-        {/* Left Side - Avatar */}
-        <div className="flex flex-col items-center justify-center text-center">
-          <div className="mb-8">
-            <img 
-              src="/images/m1.png" 
-              alt="Your Avatar" 
-              className="h-[500px] w-auto object-contain mx-auto rounded-lg"
-            />
-          </div>
-          
-          <h1 className="text-4xl font-bold text-white mb-4">
-            Perfect Fit Avatar
+    <div className="min-h-screen bg-gradient-to-br from-[#1a0b15] via-[#2d1123] to-[#54162b] flex items-center justify-center py-12 px-4">
+      <div className="max-w-4xl w-full bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
+        <div className="mb-6 text-center">
+          <h1 className="text-3xl font-bold text-white mb-2">
+            Your Body Measurements
           </h1>
-          <p className="text-gray-300 text-lg">
-            Select your measurements to create a perfectly fitted digital avatar
+          <p className="text-gray-300 text-sm">
+            This helps Vogue suggest sizes and fits that actually match your body.
           </p>
         </div>
 
-        {/* Right Side - Measurement Form */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2">Your Measurements</h2>
-            <p className="text-gray-300">Choose your sizes for the perfect fit</p>
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-white mb-2">
+              Height (cm)
+            </label>
+            <input
+              type="number"
+              name="height"
+              value={form.height}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30"
+              placeholder="e.g. 178"
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
-            
-            {/* Upper Body Size */}
-            <div>
-              <label className="block text-xl font-semibold text-white mb-4">
-                Upper Body Size
-              </label>
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-                {upperBodySizes.map((size) => (
-                  <button
-                    key={size}
-                    type="button"
-                    onClick={() => handleSizeChange('upperBody', size)}
-                    className={`py-3 px-4 rounded-lg border-2 transition-all font-semibold ${
-                      measurements.upperBody === size
-                        ? 'bg-white text-[#54162b] border-white'
-                        : 'bg-white/5 text-white border-white/20 hover:bg-white/10 hover:border-white/40'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-white mb-2">
+              Weight (kg)
+            </label>
+            <input
+              type="number"
+              name="weight"
+              value={form.weight}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30"
+              placeholder="e.g. 72"
+            />
+          </div>
 
-            {/* Waist Size */}
-            <div>
-              <label className="block text-xl font-semibold text-white mb-4">
-                Waist Size (inches)
-              </label>
-              <div className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-                {waistSizes.map((size) => (
-                  <button
-                    key={size}
-                    type="button"
-                    onClick={() => handleSizeChange('waist', size)}
-                    className={`py-3 px-4 rounded-lg border-2 transition-all font-semibold ${
-                      measurements.waist === size
-                        ? 'bg-white text-[#54162b] border-white'
-                        : 'bg-white/5 text-white border-white/20 hover:bg-white/10 hover:border-white/40'
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-white mb-2">
+              Chest (cm)
+            </label>
+            <input
+              type="number"
+              name="chest"
+              value={form.chest}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30"
+              placeholder="e.g. 96"
+            />
+          </div>
 
-            {/* Bottom Length */}
-            <div>
-              <label className="block text-xl font-semibold text-white mb-4">
-                Bottom Length
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {bottomLengths.map((length) => (
-                  <button
-                    key={length}
-                    type="button"
-                    onClick={() => handleSizeChange('bottomLength', length)}
-                    className={`py-4 px-4 rounded-lg border-2 transition-all font-semibold text-left ${
-                      measurements.bottomLength === length
-                        ? 'bg-white text-[#54162b] border-white'
-                        : 'bg-white/5 text-white border-white/20 hover:bg-white/10 hover:border-white/40'
-                    }`}
-                  >
-                    {length}
-                  </button>
-                ))}
-              </div>
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-white mb-2">
+              Waist (cm)
+            </label>
+            <input
+              type="number"
+              name="waist"
+              value={form.waist}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30"
+              placeholder="e.g. 80"
+            />
+          </div>
 
-            {/* Selected Measurements Summary */}
-            {measurements.upperBody && measurements.waist && measurements.bottomLength && (
-              <div className="bg-white/5 rounded-lg p-4 border border-white/20">
-                <h3 className="text-lg font-semibold text-white mb-2">Your Selected Measurements:</h3>
-                <div className="text-gray-300 space-y-1">
-                  <p>Upper Body: <span className="text-white font-semibold">{measurements.upperBody}</span></p>
-                  <p>Waist: <span className="text-white font-semibold">{measurements.waist}"</span></p>
-                  <p>Bottom Length: <span className="text-white font-semibold">{measurements.bottomLength}</span></p>
-                </div>
-              </div>
-            )}
+          <div>
+            <label className="block text-sm font-medium text-white mb-2">
+              Hips (cm)
+            </label>
+            <input
+              type="number"
+              name="hips"
+              value={form.hips}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30"
+              placeholder="e.g. 96"
+            />
+          </div>
 
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full bg-white text-[#54162b] py-4 px-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-all transform hover:scale-105"
+          <div>
+            <label className="block text-sm font-medium text-white mb-2">
+              Fit Preference
+            </label>
+            <select
+              name="fitPreference"
+              value={form.fitPreference}
+              onChange={handleChange}
+              className="w-full px-4 py-3 bg-white/5 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white/30"
             >
-              Create My Perfect Fit Avatar
-            </button>
+              <option value="">Choose one…</option>
+              <option value="slim">Slim / Fitted</option>
+              <option value="regular">Regular</option>
+              <option value="oversized">Oversized / Relaxed</option>
+            </select>
+          </div>
 
-            {/* Back Button */}
+          <div className="md:col-span-2 flex flex-col md:flex-row justify-between items-center gap-3 mt-4">
             <button
               type="button"
               onClick={() => router.back()}
-              className="w-full bg-transparent text-white py-3 px-4 rounded-lg font-semibold border-2 border-white/20 hover:bg-white/10 transition-all"
+              className="px-4 py-2 rounded-lg border border-white/30 text-white text-sm hover:bg-white/10"
             >
-              Back to Previous
+              Back
             </button>
-          </form>
-        </div>
+
+            <button
+              type="submit"
+              className="px-6 py-3 rounded-lg bg-white text-[#54162b] font-semibold hover:bg-gray-100 transform hover:scale-105 transition-all text-sm"
+            >
+              Save & Continue to Avatar
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
