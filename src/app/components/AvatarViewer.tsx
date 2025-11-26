@@ -5,12 +5,17 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
+export type AvatarTheme = 'street' | 'formal' | 'summer' | 'sport';
+
 interface AvatarViewerProps {
   modelUrl: string;
-  theme?: 'street' | 'formal' | 'summer' | 'sport';
+  theme?: AvatarTheme;
 }
 
-const AvatarViewer: React.FC<AvatarViewerProps> = ({ modelUrl, theme = 'street' }) => {
+const AvatarViewer: React.FC<AvatarViewerProps> = ({
+  modelUrl,
+  theme = 'street',
+}) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -18,22 +23,24 @@ const AvatarViewer: React.FC<AvatarViewerProps> = ({ modelUrl, theme = 'street' 
     const mountEl = mountRef.current;
     if (!mountEl) return;
 
-    // Theme-based colors
+    // Theme colors – you can tweak these
     const themeConfig: Record<
-      string,
+      AvatarTheme,
       { background: number; ground: number }
     > = {
-      street: { background: 0x050308, ground: 0x181220 },
-      formal: { background: 0x050315, ground: 0x14122c },
-      summer: { background: 0x021218, ground: 0x0d3b3b },
-      sport: { background: 0x05080e, ground: 0x13233a },
+      street: { background: 0x120713, ground: 0x241020 },
+      formal: { background: 0x14081e, ground: 0x251838 },
+      summer: { background: 0x06151c, ground: 0x134746 },
+      sport: { background: 0x070d16, ground: 0x15253d },
     };
 
-    const cfg = themeConfig[theme] ?? themeConfig.street;
+    const cfg = themeConfig[theme];
 
+    // Scene
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(cfg.background);
 
+    // Camera
     const camera = new THREE.PerspectiveCamera(
       45,
       mountEl.clientWidth / mountEl.clientHeight,
@@ -42,23 +49,26 @@ const AvatarViewer: React.FC<AvatarViewerProps> = ({ modelUrl, theme = 'street' 
     );
     camera.position.set(0, 1.6, 3);
 
+    // Renderer
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(mountEl.clientWidth, mountEl.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     mountEl.appendChild(renderer.domElement);
 
-    const ambient = new THREE.AmbientLight(0xffffff, 0.7);
+    // Lights
+    const ambient = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambient);
 
     const dir = new THREE.DirectionalLight(0xffffff, 1);
     dir.position.set(2, 4, 3);
     scene.add(dir);
 
+    // Controls
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.target.set(0, 1.5, 0);
 
-    // Ground
+    // Ground plate
     const groundGeo = new THREE.CircleGeometry(3, 64);
     const groundMat = new THREE.MeshStandardMaterial({
       color: cfg.ground,
@@ -69,22 +79,24 @@ const AvatarViewer: React.FC<AvatarViewerProps> = ({ modelUrl, theme = 'street' 
     ground.position.y = 0;
     scene.add(ground);
 
+    // Load avatar GLB
     const loader = new GLTFLoader();
     loader.load(
       modelUrl,
-      gltf => {
+      (gltf) => {
         const model = gltf.scene;
         model.position.set(0, 0, 0);
         scene.add(model);
         setLoading(false);
       },
       undefined,
-      error => {
+      (error) => {
         console.error('Error loading avatar model:', error);
         setLoading(false);
       }
     );
 
+    // Resize
     const handleResize = () => {
       if (!mountRef.current) return;
       const { clientWidth, clientHeight } = mountRef.current;
@@ -95,6 +107,7 @@ const AvatarViewer: React.FC<AvatarViewerProps> = ({ modelUrl, theme = 'street' 
 
     window.addEventListener('resize', handleResize);
 
+    // Animation loop
     const animate = () => {
       controls.update();
       renderer.render(scene, camera);
@@ -102,6 +115,7 @@ const AvatarViewer: React.FC<AvatarViewerProps> = ({ modelUrl, theme = 'street' 
     };
     animate();
 
+    // Cleanup
     return () => {
       window.removeEventListener('resize', handleResize);
       renderer.dispose();
@@ -109,7 +123,7 @@ const AvatarViewer: React.FC<AvatarViewerProps> = ({ modelUrl, theme = 'street' 
         mountRef.current.removeChild(renderer.domElement);
       }
     };
-  }, [modelUrl, theme]); // 👈 re-run when theme changes
+  }, [modelUrl, theme]); // theme changes → rebuild scene with new colors
 
   return (
     <div className="relative w-full h-full">

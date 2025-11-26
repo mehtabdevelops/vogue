@@ -44,8 +44,6 @@ export default function AvatarPage() {
       // RPM uses source: 'readyplayerme'
       if (json.source !== 'readyplayerme') return;
 
-      // console.log('RPM event:', json);
-
       // When iframe is ready, subscribe to all events
       if (json.eventName === 'v1.frame.ready') {
         setStatus('Ready Player Me loaded — customize your avatar.');
@@ -54,7 +52,7 @@ export default function AvatarPage() {
           JSON.stringify({
             target: 'readyplayerme',
             type: 'subscribe',
-            eventName: 'v1.**',     // subscribe to all events
+            eventName: 'v1.**', // subscribe to all events
           }),
           '*'
         );
@@ -101,80 +99,116 @@ export default function AvatarPage() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center p-6 gap-6">
-      <h1 className="text-3xl font-bold mt-4 mb-2">Vogue – Create Your 3D Avatar</h1>
+    <div className="min-h-screen bg-gradient-to-br from-[#1a0b15] via-[#2d1123] to-[#54162b] flex items-center justify-center py-12 px-4">
+      <div className="max-w-5xl w-full bg-white/10 backdrop-blur-lg rounded-2xl p-6 md:p-8 border border-white/20 grid grid-cols-1 lg:grid-cols-[3fr,2fr] gap-8">
+        {/* LEFT: Title + iframe */}
+        <div className="flex flex-col gap-4">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+              Create Your 3D Avatar
+            </h1>
+            <p className="text-gray-300 text-sm md:text-base">
+              This is your digital identity in Vogue. Customize your Ready Player Me
+              avatar — we&apos;ll use it for virtual try-ons and AR looks.
+            </p>
+          </div>
 
-      <p className="text-gray-300 text-sm mb-2 text-center max-w-xl">
-        Use the editor below to design your avatar. When you click “Done” inside
-        Ready Player Me, we&apos;ll try to capture the 3D avatar URL automatically.
-        If it doesn&apos;t appear, just paste the link from the box in the creator.
-      </p>
-
-      {/* Ready Player Me iframe */}
-      <div className="w-full max-w-4xl aspect-[16/9] rounded-2xl overflow-hidden border border-white/10 shadow-xl">
-        <iframe
-          ref={iframeRef}
-          src={RPM_FRAME_URL}
-          allow="camera *; microphone *; clipboard-read; clipboard-write"
-          style={{ width: '100%', height: '100%', border: 'none' }}
-        />
-      </div>
-
-      {/* Status + avatar URL + continue button */}
-      <div className="w-full max-w-4xl mt-4 bg-white/5 rounded-xl p-4 flex flex-col gap-4">
-        <p className="text-sm text-gray-300">
-          Status: <span className="text-white">{status}</span>
-        </p>
-
-        {/* Auto / manual URL section */}
-        <div className="space-y-2">
-          <label className="text-xs text-gray-300">
-            Avatar URL (auto-filled when export event fires, or paste from the Ready Player Me “Copy” field):
-          </label>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <input
-              type="text"
-              value={manualUrl}
-              onChange={(e) => setManualUrl(e.target.value)}
-              className="flex-1 px-3 py-2 rounded bg-black/60 border border-white/20 text-xs text-white placeholder-gray-500"
-              placeholder="https://models.readyplayer.me/....glb"
+          <div className="w-full aspect-[16/9] rounded-xl overflow-hidden border border-white/15 shadow-xl bg-black/40">
+            <iframe
+              ref={iframeRef}
+              src={RPM_FRAME_URL}
+              allow="camera *; microphone *; clipboard-read; clipboard-write"
+              style={{ width: '100%', height: '100%', border: 'none' }}
             />
-            <button
-              type="button"
-              onClick={handleUseManualUrl}
-              className="px-3 py-2 rounded bg-purple-600 hover:bg-purple-700 text-xs font-semibold"
-            >
-              Use This URL
-            </button>
-            {localAvatarUrl && (
+          </div>
+
+          <p className="text-xs text-gray-300">
+            Use the controls inside Ready Player Me. When you&apos;re done, either
+            let it export automatically or copy the avatar link into the field on the
+            right.
+          </p>
+        </div>
+
+        {/* RIGHT: Status, URL, continue */}
+        <div className="bg-black/40 rounded-2xl border border-white/15 p-5 flex flex-col gap-4">
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-1">
+              Avatar Export
+            </h2>
+            <p className="text-gray-300 text-sm">
+              We store the 3D model link so your avatar can appear on the try-on screen.
+            </p>
+          </div>
+
+          <div>
+            <p className="text-sm text-gray-300">
+              Status:{' '}
+              <span className="text-white font-medium">
+                {status}
+              </span>
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs text-gray-300">
+              Avatar URL (auto-filled when export event fires, or paste from the
+              Ready Player Me &quot;Copy&quot; field):
+            </label>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                value={manualUrl}
+                onChange={(e) => setManualUrl(e.target.value)}
+                className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/20 text-xs text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30"
+                placeholder="https://models.readyplayer.me/....glb"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
               <button
                 type="button"
-                onClick={handleCopyUrl}
-                className="px-3 py-2 rounded bg-blue-600 hover:bg-blue-700 text-xs"
+                onClick={handleUseManualUrl}
+                className="px-4 py-2 rounded-lg bg-white text-[#54162b] text-xs font-semibold hover:bg-gray-100 transform hover:scale-105 transition-all"
               >
-                Copy URL
+                Use This URL
               </button>
+
+              {localAvatarUrl && (
+                <button
+                  type="button"
+                  onClick={handleCopyUrl}
+                  className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-xs font-semibold"
+                >
+                  Copy URL
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-2 pt-3 border-t border-white/10 flex flex-col gap-3">
+            {localAvatarUrl ? (
+              <>
+                <div className="text-[11px] text-gray-300 break-all bg-black/40 rounded-lg px-3 py-2 border border-white/10">
+                  <span className="font-semibold text-white">Current avatar URL:</span>{' '}
+                  {localAvatarUrl}
+                </div>
+                <div className="flex justify-end">
+                  <Link
+                    href="/try-on"
+                    className="px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-xs font-semibold text-white transform hover:scale-105 transition-all"
+                  >
+                    Continue to Try Outfits →
+                  </Link>
+                </div>
+              </>
+            ) : (
+              <p className="text-[11px] text-gray-300">
+                After export, the URL should appear above. If it doesn&apos;t, copy
+                the link from Ready Player Me and paste it here, then click
+                &quot;Use This URL&quot;.
+              </p>
             )}
           </div>
         </div>
-
-        {/* Continue button only once we have some URL */}
-        {localAvatarUrl ? (
-          <div className="flex justify-end">
-            <Link
-              href="/try-on"
-              className="px-4 py-2 rounded bg-emerald-500 hover:bg-emerald-600 text-xs font-medium"
-            >
-              Continue to Try Outfits →
-            </Link>
-          </div>
-        ) : (
-          <p className="text-xs text-gray-400">
-            After export, the URL should appear above. If it doesn&apos;t, copy the
-            link from Ready Player Me and paste it into the field, then click
-            &quot;Use This URL&quot;.
-          </p>
-        )}
       </div>
     </div>
   );
