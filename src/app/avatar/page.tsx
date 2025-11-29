@@ -2,15 +2,13 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useAvatar } from '../context/AvatarContext';
 
-// 👇 Only your subdomain, no https, no /avatar
 const RPM_SUBDOMAIN = 'vogue-4sveh7';
-
 const RPM_ORIGIN = `https://${RPM_SUBDOMAIN}.readyplayer.me`;
 const RPM_FRAME_URL = `${RPM_ORIGIN}/avatar?frameApi`;
 
-// Helper: parse message.data which might be a JSON string or an object
 function parseRpmMessage(event: MessageEvent<any>): any | null {
   let data: any = event.data;
   if (!data) return null;
@@ -19,55 +17,68 @@ function parseRpmMessage(event: MessageEvent<any>): any | null {
     try {
       data = JSON.parse(data);
     } catch {
-      // not JSON, ignore
       return null;
     }
   }
   return data;
 }
 
-export default function AvatarPage() {
+export default function AvatarPageImproved() {
+  const router = useRouter();
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
   const [localAvatarUrl, setLocalAvatarUrl] = useState<string | null>(null);
   const [manualUrl, setManualUrl] = useState('');
   const [status, setStatus] = useState<string>('Loading Ready Player Me...');
-  const { setAvatarUrl } = useAvatar();
+  const { setAvatarUrl, avatarUrl: contextAvatarUrl } = useAvatar();
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+
+  // Load existing avatar URL on mount
+  useEffect(() => {
+    const storedUrl = localStorage.getItem('vogue_avatar_url');
+    console.log('🔍 Checking for existing avatar URL:', storedUrl);
+    
+    if (storedUrl) {
+      setLocalAvatarUrl(storedUrl);
+      setManualUrl(storedUrl);
+      setStatus('Avatar already created! You can edit it or create a new one.');
+      console.log('✅ Avatar URL loaded from storage');
+    } else {
+      console.log('ℹ️ No existing avatar URL found');
+    }
+  }, []);
 
   useEffect(() => {
     function handleMessage(event: MessageEvent<any>) {
-      // Only messages coming from Ready Player Me
       if (!event.origin.endsWith('.readyplayer.me')) return;
 
       const json = parseRpmMessage(event);
-      if (!json) return;
+      if (!json || json.source !== 'readyplayerme') return;
 
-      // RPM uses source: 'readyplayerme'
-      if (json.source !== 'readyplayerme') return;
+      console.log('📨 RPM Message:', json.eventName, json);
 
-      // When iframe is ready, subscribe to all events
       if (json.eventName === 'v1.frame.ready') {
-        setStatus('Ready Player Me loaded — customize your avatar.');
+        setStatus('✅ Ready Player Me loaded — customize your avatar.');
+        console.log('✅ RPM iframe ready');
 
         iframeRef.current?.contentWindow?.postMessage(
           JSON.stringify({
             target: 'readyplayerme',
             type: 'subscribe',
-            eventName: 'v1.**', // subscribe to all events
+            eventName: 'v1.**',
           }),
           '*'
         );
       }
 
-      // When avatar is exported, we get url in json.data.url
       if (json.eventName === 'v1.avatar.exported') {
         const url = json.data?.url as string | undefined;
+        console.log('🎉 Avatar exported! URL:', url);
+        
         if (url) {
-          setLocalAvatarUrl(url);
-          setManualUrl(url);
-          setAvatarUrl(url); // save globally
-          setStatus('Avatar exported! You can continue to try outfits.');
+          saveAvatarUrl(url);
         } else {
-          setStatus('Avatar exported but no URL found in payload.');
+          setStatus('⚠️ Avatar exported but no URL found. Please copy manually.');
+          setSaveStatus('error');
         }
       }
     }
@@ -76,26 +87,98 @@ export default function AvatarPage() {
     return () => window.removeEventListener('message', handleMessage);
   }, [setAvatarUrl]);
 
+  const saveAvatarUrl = (url: string) => {
+    try {
+      setSaveStatus('saving');
+      setStatus('💾 Saving avatar URL...');
+      console.log('💾 Saving avatar URL:', url);
+
+      // Save to state
+      setLocalAvatarUrl(url);
+      setManualUrl(url);
+
+      // Save to localStorage
+      localStorage.setItem('vogue_avatar_url', url);
+      console.log('✅ Saved to localStorage');
+
+      // Save to context
+      setAvatarUrl(url);
+      console.log('✅ Saved to context');
+
+      // Verify save
+      const verified = localStorage.getItem('vogue_avatar_url');
+      if (verified === url) {
+        setStatus('✅ Avatar saved successfully! Ready for try-on.');
+        setSaveStatus('saved');
+        console.log('✅ Save verified!');
+      } else {
+        throw new Error('Verification failed');
+      }
+    } catch (error) {
+      console.error('❌ Error saving avatar:', error);
+      setStatus('❌ Error saving avatar. Please try manual save.');
+      setSaveStatus('error');
+    }
+  };
+
   const handleCopyUrl = async () => {
     if (!localAvatarUrl) return;
     try {
       await navigator.clipboard.writeText(localAvatarUrl);
-      setStatus('Copied to clipboard! ✅');
+      setStatus('✅ URL copied to clipboard!');
     } catch {
-      setStatus('Copy failed. Try manually.');
+      setStatus('❌ Copy failed. Try manually selecting and copying.');
     }
   };
 
-  // Fallback: user pastes the URL from the RPM “Copy” box
   const handleUseManualUrl = () => {
     const trimmed = manualUrl.trim();
-    if (!trimmed.startsWith('http')) {
-      alert('Please paste a valid URL (should start with http)');
+    console.log('📝 Manual URL input:', trimmed);
+
+    if (!trimmed) {
+      alert('Please paste a URL first');
       return;
     }
-    setLocalAvatarUrl(trimmed);
-    setAvatarUrl(trimmed);
-    setStatus('Avatar URL set from pasted link. You can continue to try outfits.');
+
+    if (!trimmed.startsWith('http')) {
+      alert('Invalid URL. Must start with http:// or https://');
+      return;
+    }
+
+    if (!trimmed.includes('.glb')) {
+      alert('URL should be a .glb file from Ready Player Me');
+      return;
+    }
+
+    saveAvatarUrl(trimmed);
+  };
+
+  const handleTestUrl = () => {
+    if (!localAvatarUrl) {
+      alert('No avatar URL to test');
+      return;
+    }
+
+    console.log('🧪 Testing URL:', localAvatarUrl);
+    window.open(localAvatarUrl, '_blank');
+  };
+
+  const handleVerify = () => {
+    const stored = localStorage.getItem('vogue_avatar_url');
+    const context = contextAvatarUrl;
+
+    console.log('🔍 Verification:');
+    console.log('  localStorage:', stored);
+    console.log('  context:', context);
+    console.log('  local state:', localAvatarUrl);
+
+    if (stored && stored === context && stored === localAvatarUrl) {
+      alert('✅ Avatar is properly saved everywhere!');
+      setStatus('✅ Verified! Avatar is ready.');
+    } else {
+      alert(`⚠️ Sync issue detected:\nlocalStorage: ${stored ? 'Yes' : 'No'}\nContext: ${context ? 'Yes' : 'No'}\nMatch: ${stored === context ? 'Yes' : 'No'}`);
+      setStatus('⚠️ Sync issue. Try refreshing or manual save.');
+    }
   };
 
   return (
@@ -108,8 +191,7 @@ export default function AvatarPage() {
               Create Your 3D Avatar
             </h1>
             <p className="text-gray-300 text-sm md:text-base">
-              This is your digital identity in Vogue. Customize your Ready Player Me
-              avatar — we&apos;ll use it for virtual try-ons and AR looks.
+              Your digital identity for virtual try-ons
             </p>
           </div>
 
@@ -122,90 +204,130 @@ export default function AvatarPage() {
             />
           </div>
 
-          <p className="text-xs text-gray-300">
-            Use the controls inside Ready Player Me. When you&apos;re done, either
-            let it export automatically or copy the avatar link into the field on the
-            right.
-          </p>
+          <div className="text-xs text-gray-300 bg-blue-500/20 border border-blue-500/50 rounded-lg p-3">
+            <p className="font-semibold text-blue-300 mb-1">💡 How to save your avatar:</p>
+            <ul className="space-y-1 ml-4 list-disc">
+              <li>Customize avatar in Ready Player Me</li>
+              <li>It will auto-save when you're done</li>
+              <li>OR copy the GLB link and paste on the right →</li>
+              <li>Click "Use This URL" to save manually</li>
+            </ul>
+          </div>
         </div>
 
-        {/* RIGHT: Status, URL, continue */}
+        {/* RIGHT: Status, URL, controls */}
         <div className="bg-black/40 rounded-2xl border border-white/15 p-5 flex flex-col gap-4">
           <div>
             <h2 className="text-2xl font-bold text-white mb-1">
-              Avatar Export
+              Avatar Status
             </h2>
             <p className="text-gray-300 text-sm">
-              We store the 3D model link so your avatar can appear on the try-on screen.
+              Save your avatar to use in try-on
             </p>
           </div>
 
-          <div>
-            <p className="text-sm text-gray-300">
-              Status:{' '}
-              <span className="text-white font-medium">
-                {status}
-              </span>
+          {/* Status Message */}
+          <div className={`p-4 rounded-xl border-2 ${
+            saveStatus === 'saved' 
+              ? 'bg-green-500/20 border-green-500'
+              : saveStatus === 'error'
+              ? 'bg-red-500/20 border-red-500'
+              : saveStatus === 'saving'
+              ? 'bg-yellow-500/20 border-yellow-500'
+              : 'bg-white/10 border-white/20'
+          }`}>
+            <p className="text-sm text-white">
+              {status}
             </p>
           </div>
 
+          {/* Manual URL Input */}
           <div className="space-y-2">
-            <label className="text-xs text-gray-300">
-              Avatar URL (auto-filled when export event fires, or paste from the
-              Ready Player Me &quot;Copy&quot; field):
+            <label className="text-xs text-gray-300 font-semibold">
+              Avatar URL (paste from Ready Player Me):
             </label>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <input
-                type="text"
-                value={manualUrl}
-                onChange={(e) => setManualUrl(e.target.value)}
-                className="flex-1 px-3 py-2 rounded-lg bg-white/5 border border-white/20 text-xs text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30"
-                placeholder="https://models.readyplayer.me/....glb"
-              />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={handleUseManualUrl}
-                className="px-4 py-2 rounded-lg bg-white text-[#54162b] text-xs font-semibold hover:bg-gray-100 transform hover:scale-105 transition-all"
-              >
-                Use This URL
-              </button>
-
-              {localAvatarUrl && (
-                <button
-                  type="button"
-                  onClick={handleCopyUrl}
-                  className="px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-xs font-semibold"
-                >
-                  Copy URL
-                </button>
-              )}
-            </div>
+            <textarea
+              value={manualUrl}
+              onChange={(e) => setManualUrl(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/20 text-xs text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/30 font-mono resize-none"
+              placeholder="https://models.readyplayer.me/....glb"
+              rows={3}
+            />
+            
+            <button
+              type="button"
+              onClick={handleUseManualUrl}
+              disabled={!manualUrl.trim()}
+              className="w-full px-4 py-3 rounded-lg bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-sm font-bold text-white transition-all"
+            >
+              💾 Use This URL
+            </button>
           </div>
 
-          <div className="mt-2 pt-3 border-t border-white/10 flex flex-col gap-3">
+          {/* Action Buttons */}
+          {localAvatarUrl && (
+            <div className="space-y-2 pt-3 border-t border-white/10">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={handleCopyUrl}
+                  className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white"
+                >
+                  📋 Copy
+                </button>
+
+                <button
+                  onClick={handleTestUrl}
+                  className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white"
+                >
+                  🧪 Test
+                </button>
+
+                <button
+                  onClick={handleVerify}
+                  className="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-semibold text-white col-span-2"
+                >
+                  🔍 Verify Save
+                </button>
+              </div>
+
+              <div className="text-[10px] text-gray-400 break-all bg-black/40 rounded-lg px-3 py-2 border border-white/10 max-h-20 overflow-y-auto">
+                <span className="font-semibold text-white">Saved:</span>{' '}
+                {localAvatarUrl}
+              </div>
+            </div>
+          )}
+
+          {/* Navigation */}
+          <div className="space-y-3 pt-3 border-t border-white/10">
             {localAvatarUrl ? (
               <>
-                <div className="text-[11px] text-gray-300 break-all bg-black/40 rounded-lg px-3 py-2 border border-white/10">
-                  <span className="font-semibold text-white">Current avatar URL:</span>{' '}
-                  {localAvatarUrl}
-                </div>
-                <div className="flex justify-end">
-                  <Link
-                    href="/try-on"
-                    className="px-5 py-2.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-xs font-semibold text-white transform hover:scale-105 transition-all"
-                  >
-                    Continue to Try Outfits →
-                  </Link>
-                </div>
+                <Link
+                  href="/try-on"
+                  className="block w-full px-6 py-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-center font-bold text-white transform hover:scale-105 transition-all shadow-lg text-lg"
+                >
+                  <span className="text-2xl mr-2">👗</span>
+                  Try On Outfits Now!
+                </Link>
+
+                <Link
+                  href="/diagnostic"
+                  className="block text-center text-xs text-gray-300 hover:text-white underline"
+                >
+                  🔍 Run Diagnostic Check
+                </Link>
               </>
             ) : (
-              <p className="text-[11px] text-gray-300">
-                After export, the URL should appear above. If it doesn&apos;t, copy
-                the link from Ready Player Me and paste it here, then click
-                &quot;Use This URL&quot;.
-              </p>
+              <div className="text-center">
+                <p className="text-sm text-gray-300 mb-2">
+                  Create and save your avatar first
+                </p>
+                <Link
+                  href="/diagnostic"
+                  className="text-xs text-blue-300 hover:text-blue-200 underline"
+                >
+                  Having issues? Run diagnostic
+                </Link>
+              </div>
             )}
           </div>
         </div>
