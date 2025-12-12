@@ -92,7 +92,7 @@ const CartPage = () => {
     });
 
     alert('Proceeding to checkout...');
-    // router.push('/checkout');
+    router.push('/checkout');
   };
 
   if (loading) {
@@ -296,11 +296,12 @@ const CartPage = () => {
               </div>
 
               <button
-                onClick={handleCheckout}
-                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-4 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 transition-all transform hover:scale-105"
-              >
-                Proceed to Checkout
-              </button>
+  onClick={() => router.push("/payment")}
+  className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl hover:scale-105 transition"
+>
+  Proceed to Checkout
+</button>
+
 
               <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
                 <p className="text-xs text-gray-400 flex items-center gap-2">
