@@ -9,6 +9,8 @@ import { useAvatar } from '../context/AvatarContext';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { getRecommendationsForItem } from "../services/recommendationService";
+
 
 interface ClothingItem {
   id: string;
@@ -26,7 +28,7 @@ interface ClothingItem {
 // EXPANDED CLOTHING CATALOG - 35+ Items
 // Copy this into your src/app/try-on/page.tsx file, replacing the existing CLOTHING_CATALOG array
 
-const CLOTHING_CATALOG: ClothingItem[] = [
+export const CLOTHING_CATALOG: ClothingItem[] = [
   // ========== TOPS (10 items) ==========
   {
     id: 'shirt-001',
@@ -587,12 +589,17 @@ export default function TryOnPage() {
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const avatarRef = useRef<THREE.Group | null>(null);
+  const clothingMeshesRef = useRef<THREE.Mesh[]>([]);
   const controlsRef = useRef<OrbitControls | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const mountedRef = useRef<boolean>(false);
   const autoRotateRef = useRef<boolean>(false);
   const originalMaterialsRef = useRef<Map<string, THREE.Material | THREE.Material[]>>(new Map());
 
+  // 🔥 Step 9 additions
+const [scale, setScale] = useState(1);
+const [offsetX, setOffsetX] = useState(0);
+const [offsetY, setOffsetY] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -660,44 +667,27 @@ export default function TryOnPage() {
         }
 
         if (shouldApplyMaterial) {
-          materialApplied = true;
-          
-          // FORCE: Create completely new material with NO TEXTURES
-          const newMaterial = new THREE.MeshStandardMaterial({
-            color: new THREE.Color(color),
-            roughness: 0.8,
-            metalness: 0.1,
-            side: THREE.FrontSide,
-            // CRITICAL: Remove all texture maps
-            map: null,
-            normalMap: null,
-            roughnessMap: null,
-            metalnessMap: null,
-            aoMap: null,
-            emissiveMap: null,
-            alphaMap: null,
-          });
-          
-          // Dispose old material first
-          if (Array.isArray(child.material)) {
-            const materials = child.material as THREE.Material[];
-            materials.forEach(m => {
-              const mat = m as any;
-              if (mat.map) mat.map.dispose();
-              m.dispose();
-            });
-          } else {
-            const mat = child.material as any;
-            if (mat.map) mat.map.dispose();
-            (child.material as THREE.Material).dispose();
-          }
-          
-          // Apply new material
-          child.material = newMaterial;
-          child.material.needsUpdate = true;
-          
-          console.log(`✅ FORCED color ${color} to ${meshName}`);
-        }
+  materialApplied = true;
+
+  // Track clothing mesh for fit adjustments
+  clothingMeshesRef.current.push(child);
+
+  const newMaterial = new THREE.MeshStandardMaterial({
+    color: new THREE.Color(color),
+    roughness: 0.8,
+    metalness: 0.1,
+    side: THREE.FrontSide,
+    map: null,
+  });
+
+  if (!Array.isArray(child.material)) {
+    child.material.dispose();
+  }
+
+  child.material = newMaterial;
+  child.material.needsUpdate = true;
+}
+
       }
     });
 
@@ -739,6 +729,12 @@ export default function TryOnPage() {
 
     setShowClothing(false);
   }, []);
+useEffect(() => {
+  clothingMeshesRef.current.forEach((mesh) => {
+    mesh.scale.set(scale, scale, scale);
+    mesh.position.set(offsetX, offsetY, mesh.position.z);
+  });
+}, [scale, offsetX, offsetY]);
 
   useEffect(() => {
     if (!containerRef.current || !avatarUrl || mountedRef.current) return;
@@ -944,6 +940,8 @@ export default function TryOnPage() {
 
   const handleRemoveClothing = useCallback(() => {
     restoreOriginalMaterials();
+      clothingMeshesRef.current = [];
+
     setSelectedItem(null);
     setSelectedColor('');
     setSelectedSize('');
@@ -1006,6 +1004,12 @@ export default function TryOnPage() {
       : CLOTHING_CATALOG.filter(item => item.category === selectedCategory),
     [selectedCategory]
   );
+
+  const recommendations = useMemo(() => {
+  if (!selectedItem) return [];
+  return getRecommendationsForItem(selectedItem.id, 4);
+}, [selectedItem]);
+
 
   const categories = [
   { id: 'all', label: 'All', icon: '👗' },
@@ -1070,6 +1074,7 @@ export default function TryOnPage() {
               >
                 {autoRotate ? '⏸️ Stop Rotate' : '▶️ Auto-Rotate'}
               </button>
+
               
               <button
                 onClick={handleCapturePhoto}
