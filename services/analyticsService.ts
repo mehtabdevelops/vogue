@@ -1,5 +1,5 @@
 // app/services/analyticsService.ts
-import { CLOTHING_CATALOG } from "../try-on/page";
+import { CLOTHING_CATALOG } from "../src/app/try-on/page";
 import { getOrders, Order } from "./orderService";
 
 export function getCategoryCounts() {

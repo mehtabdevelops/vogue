@@ -1,5 +1,5 @@
 // app/services/recommendationService.ts
-import { CLOTHING_CATALOG } from "../try-on/page";
+import { CLOTHING_CATALOG } from "../src/app/try-on/page";
 
 export function getRecommendationsForItem(itemId: string, limit = 4) {
   const base = CLOTHING_CATALOG.find(item => item.id === itemId);

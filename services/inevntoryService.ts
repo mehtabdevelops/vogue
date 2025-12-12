@@ -1,5 +1,5 @@
 // app/services/inventoryService.ts
-import { CLOTHING_CATALOG } from "../try-on/page";
+import { CLOTHING_CATALOG } from "../src/app/try-on/page";
 
 export function getAllProducts() {
   return CLOTHING_CATALOG;

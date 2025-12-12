@@ -4,6 +4,9 @@ import "./globals.css";
 
 // 🔥 Import AvatarProvider
 import { AvatarProvider } from "./context/AvatarContext";
+import Navbar from "@/components/Navbar";
+
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +37,8 @@ export default function RootLayout({
         <AvatarProvider>
           {children}
         </AvatarProvider>
+        {/* <Navbar />
+        {children} */}
       </body>
     </html>
   );

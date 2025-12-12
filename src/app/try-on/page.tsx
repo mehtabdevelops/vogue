@@ -9,7 +9,7 @@ import { useAvatar } from '../context/AvatarContext';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { getRecommendationsForItem } from "../services/recommendationService";
+import { getRecommendationsForItem } from "../../../services/recommendationService";
 
 
 interface ClothingItem {
@@ -597,9 +597,9 @@ export default function TryOnPage() {
   const originalMaterialsRef = useRef<Map<string, THREE.Material | THREE.Material[]>>(new Map());
 
   // 🔥 Step 9 additions
-const [scale, setScale] = useState(1);
-const [offsetX, setOffsetX] = useState(0);
-const [offsetY, setOffsetY] = useState(0);
+  const [scale, setScale] = useState(1);
+  const [offsetX, setOffsetX] = useState(0);
+  const [offsetY, setOffsetY] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -654,39 +654,39 @@ const [offsetY, setOffsetY] = useState(0);
           case 'outerwear':
             shouldApplyMaterial = meshName === 'Wolf3D_Outfit_Top';
             break;
-            
+
           case 'bottoms':
             shouldApplyMaterial = meshName === 'Wolf3D_Outfit_Bottom';
             break;
-            
+
           case 'dresses':
-            shouldApplyMaterial = 
-              meshName === 'Wolf3D_Outfit_Top' || 
+            shouldApplyMaterial =
+              meshName === 'Wolf3D_Outfit_Top' ||
               meshName === 'Wolf3D_Outfit_Bottom';
             break;
         }
 
         if (shouldApplyMaterial) {
-  materialApplied = true;
+          materialApplied = true;
 
-  // Track clothing mesh for fit adjustments
-  clothingMeshesRef.current.push(child);
+          // Track clothing mesh for fit adjustments
+          clothingMeshesRef.current.push(child);
 
-  const newMaterial = new THREE.MeshStandardMaterial({
-    color: new THREE.Color(color),
-    roughness: 0.8,
-    metalness: 0.1,
-    side: THREE.FrontSide,
-    map: null,
-  });
+          const newMaterial = new THREE.MeshStandardMaterial({
+            color: new THREE.Color(color),
+            roughness: 0.8,
+            metalness: 0.1,
+            side: THREE.FrontSide,
+            map: null,
+          });
 
-  if (!Array.isArray(child.material)) {
-    child.material.dispose();
-  }
+          if (!Array.isArray(child.material)) {
+            child.material.dispose();
+          }
 
-  child.material = newMaterial;
-  child.material.needsUpdate = true;
-}
+          child.material = newMaterial;
+          child.material.needsUpdate = true;
+        }
 
       }
     });
@@ -712,7 +712,7 @@ const [offsetY, setOffsetY] = useState(0);
           } else {
             (child.material as THREE.Material).dispose();
           }
-          
+
           // Restore original (clone it again to avoid reference issues)
           if (Array.isArray(originalMaterial)) {
             const origMaterials = originalMaterial as THREE.Material[];
@@ -720,7 +720,7 @@ const [offsetY, setOffsetY] = useState(0);
           } else {
             child.material = (originalMaterial as THREE.Material).clone();
           }
-          
+
           child.material.needsUpdate = true;
           console.log(`🔄 Restored original material for: ${child.name}`);
         }
@@ -729,12 +729,12 @@ const [offsetY, setOffsetY] = useState(0);
 
     setShowClothing(false);
   }, []);
-useEffect(() => {
-  clothingMeshesRef.current.forEach((mesh) => {
-    mesh.scale.set(scale, scale, scale);
-    mesh.position.set(offsetX, offsetY, mesh.position.z);
-  });
-}, [scale, offsetX, offsetY]);
+  useEffect(() => {
+    clothingMeshesRef.current.forEach((mesh) => {
+      mesh.scale.set(scale, scale, scale);
+      mesh.position.set(offsetX, offsetY, mesh.position.z);
+    });
+  }, [scale, offsetX, offsetY]);
 
   useEffect(() => {
     if (!containerRef.current || !avatarUrl || mountedRef.current) return;
@@ -766,7 +766,7 @@ useEffect(() => {
     (renderer as any).outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1;
-    
+
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
@@ -813,9 +813,9 @@ useEffect(() => {
       avatarUrl,
       (gltf) => {
         if (!mountedRef.current) return;
-        
+
         console.log('✅ Avatar loaded successfully');
-        
+
         const avatar = gltf.scene;
         storeOriginalMaterials(avatar);
 
@@ -848,7 +848,7 @@ useEffect(() => {
 
     const animate = () => {
       if (!mountedRef.current) return;
-      
+
       const animationId = requestAnimationFrame(animate);
       animationFrameRef.current = animationId;
 
@@ -875,7 +875,7 @@ useEffect(() => {
     return () => {
       mountedRef.current = false;
       window.removeEventListener('resize', handleResize);
-      
+
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
@@ -883,7 +883,7 @@ useEffect(() => {
       if (controlsRef.current) {
         controlsRef.current.dispose();
       }
-      
+
       if (sceneRef.current) {
         sceneRef.current.traverse((object) => {
           if (object instanceof THREE.Mesh) {
@@ -940,7 +940,7 @@ useEffect(() => {
 
   const handleRemoveClothing = useCallback(() => {
     restoreOriginalMaterials();
-      clothingMeshesRef.current = [];
+    clothingMeshesRef.current = [];
 
     setSelectedItem(null);
     setSelectedColor('');
@@ -985,7 +985,7 @@ useEffect(() => {
 
     localStorage.setItem('vogueCart', JSON.stringify(cart));
     window.dispatchEvent(new Event('cartUpdated'));
-    
+
     alert(`✅ Added ${selectedItem.name} to cart!`);
   }, [selectedItem, selectedColor, selectedSize, avatarUrl]);
 
@@ -998,7 +998,7 @@ useEffect(() => {
     link.click();
   }, []);
 
-  const filteredCatalog = useMemo(() => 
+  const filteredCatalog = useMemo(() =>
     selectedCategory === 'all'
       ? CLOTHING_CATALOG
       : CLOTHING_CATALOG.filter(item => item.category === selectedCategory),
@@ -1006,19 +1006,19 @@ useEffect(() => {
   );
 
   const recommendations = useMemo(() => {
-  if (!selectedItem) return [];
-  return getRecommendationsForItem(selectedItem.id, 4);
-}, [selectedItem]);
+    if (!selectedItem) return [];
+    return getRecommendationsForItem(selectedItem.id, 4);
+  }, [selectedItem]);
 
 
   const categories = [
-  { id: 'all', label: 'All', icon: '👗' },
-  { id: 'tops', label: 'Tops', icon: '👕' },
-  { id: 'outerwear', label: 'Jackets', icon: '🧥' },
-  { id: 'bottoms', label: 'Bottoms', icon: '👖' },
-  { id: 'dresses', label: 'Dresses', icon: '👗' },
-  { id: 'accessories', label: 'Accessories', icon: '👔' }
-];
+    { id: 'all', label: 'All', icon: '👗' },
+    { id: 'tops', label: 'Tops', icon: '👕' },
+    { id: 'outerwear', label: 'Jackets', icon: '🧥' },
+    { id: 'bottoms', label: 'Bottoms', icon: '👖' },
+    { id: 'dresses', label: 'Dresses', icon: '👗' },
+    { id: 'accessories', label: 'Accessories', icon: '👔' }
+  ];
   if (!avatarUrl) return null;
 
   return (
@@ -1035,7 +1035,7 @@ useEffect(() => {
 
         <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-6">
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-            <div 
+            <div
               ref={containerRef}
               className="w-full h-[600px] rounded-xl overflow-hidden bg-gradient-to-br from-[#1a0b15] to-[#2d1123] relative"
             >
@@ -1066,16 +1066,15 @@ useEffect(() => {
             <div className="flex flex-wrap gap-3 mt-4">
               <button
                 onClick={() => setAutoRotate(!autoRotate)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  autoRotate
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${autoRotate
                     ? 'bg-purple-600 text-white'
                     : 'bg-white/10 text-white hover:bg-white/20'
-                }`}
+                  }`}
               >
                 {autoRotate ? '⏸️ Stop Rotate' : '▶️ Auto-Rotate'}
               </button>
 
-              
+
               <button
                 onClick={handleCapturePhoto}
                 className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 font-medium"
@@ -1103,7 +1102,7 @@ useEffect(() => {
                   <p className="text-white font-bold text-xl">${selectedItem.price.toFixed(2)}</p>
                 </div>
                 <p className="text-gray-300 text-sm mb-3">{selectedItem.description}</p>
-                
+
                 <div className="space-y-3">
                   <div>
                     <label className="block text-sm text-gray-300 mb-2 font-semibold">
@@ -1114,11 +1113,10 @@ useEffect(() => {
                         <button
                           key={color.hex}
                           onClick={() => handleColorChange(color.hex)}
-                          className={`w-10 h-10 rounded-lg border-2 transition-all ${
-                            selectedColor === color.hex
+                          className={`w-10 h-10 rounded-lg border-2 transition-all ${selectedColor === color.hex
                               ? 'border-white scale-110 shadow-lg'
                               : 'border-white/30 hover:border-white/50'
-                          }`}
+                            }`}
                           style={{ backgroundColor: color.hex }}
                           title={color.name}
                         />
@@ -1133,11 +1131,10 @@ useEffect(() => {
                         <button
                           key={size}
                           onClick={() => setSelectedSize(size)}
-                          className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                            selectedSize === size
+                          className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedSize === size
                               ? 'bg-white text-[#54162b]'
                               : 'bg-white/10 text-white hover:bg-white/20'
-                          }`}
+                            }`}
                         >
                           {size}
                         </button>
@@ -1169,11 +1166,10 @@ useEffect(() => {
                 <button
                   key={cat.id}
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                    selectedCategory === cat.id
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${selectedCategory === cat.id
                       ? 'bg-white text-[#54162b]'
                       : 'bg-white/10 text-white hover:bg-white/20'
-                  }`}
+                    }`}
                 >
                   <span className="mr-1">{cat.icon}</span>
                   {cat.label}
@@ -1186,11 +1182,10 @@ useEffect(() => {
                 <div
                   key={item.id}
                   onClick={() => handleSelectItem(item)}
-                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                    selectedItem?.id === item.id
+                  className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedItem?.id === item.id
                       ? 'bg-white/20 border-white shadow-lg'
                       : 'bg-white/5 border-white/20 hover:bg-white/10 hover:border-white/40'
-                  }`}
+                    }`}
                 >
                   <div className="flex gap-3">
                     <div
