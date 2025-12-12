@@ -23,7 +23,11 @@ interface ClothingItem {
   colors: { name: string; hex: string }[];
 }
 
+// EXPANDED CLOTHING CATALOG - 35+ Items
+// Copy this into your src/app/try-on/page.tsx file, replacing the existing CLOTHING_CATALOG array
+
 const CLOTHING_CATALOG: ClothingItem[] = [
+  // ========== TOPS (10 items) ==========
   {
     id: 'shirt-001',
     name: 'Classic White Shirt',
@@ -94,6 +98,110 @@ const CLOTHING_CATALOG: ClothingItem[] = [
     ]
   },
   {
+    id: 'tshirt-002',
+    name: 'Graphic Tee',
+    category: 'tops',
+    brand: 'Vogue Street',
+    price: 39.99,
+    image: '/images/clothing/graphic-tee.png',
+    thumbnailColor: '#000000',
+    description: 'Bold graphic print t-shirt',
+    sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+    colors: [
+      { name: 'Black', hex: '#000000' },
+      { name: 'White', hex: '#FFFFFF' },
+      { name: 'Red', hex: '#DC143C' },
+      { name: 'Royal Blue', hex: '#4169E1' }
+    ]
+  },
+  {
+    id: 'sweater-001',
+    name: 'Cable Knit Sweater',
+    category: 'tops',
+    brand: 'Vogue Knits',
+    price: 125.99,
+    image: '/images/clothing/cable-sweater.png',
+    thumbnailColor: '#8B4513',
+    description: 'Cozy cable knit wool sweater',
+    sizes: ['S', 'M', 'L', 'XL'],
+    colors: [
+      { name: 'Camel', hex: '#8B4513' },
+      { name: 'Cream', hex: '#F5F5DC' },
+      { name: 'Navy', hex: '#000080' },
+      { name: 'Forest Green', hex: '#228B22' }
+    ]
+  },
+  {
+    id: 'vneck-001',
+    name: 'V-Neck Sweater',
+    category: 'tops',
+    brand: 'Vogue Essentials',
+    price: 95.99,
+    image: '/images/clothing/vneck.png',
+    thumbnailColor: '#696969',
+    description: 'Elegant v-neck sweater',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: [
+      { name: 'Charcoal', hex: '#696969' },
+      { name: 'Burgundy', hex: '#800020' },
+      { name: 'Navy', hex: '#000080' },
+      { name: 'Black', hex: '#000000' }
+    ]
+  },
+  {
+    id: 'longsleeve-001',
+    name: 'Long Sleeve Henley',
+    category: 'tops',
+    brand: 'Vogue Casual',
+    price: 55.99,
+    image: '/images/clothing/henley.png',
+    thumbnailColor: '#A9A9A9',
+    description: 'Classic henley with button placket',
+    sizes: ['S', 'M', 'L', 'XL'],
+    colors: [
+      { name: 'Heather Grey', hex: '#A9A9A9' },
+      { name: 'Navy', hex: '#000080' },
+      { name: 'Olive', hex: '#556B2F' },
+      { name: 'Black', hex: '#000000' }
+    ]
+  },
+  {
+    id: 'tank-001',
+    name: 'Athletic Tank Top',
+    category: 'tops',
+    brand: 'Vogue Active',
+    price: 29.99,
+    image: '/images/clothing/tank.png',
+    thumbnailColor: '#FFFFFF',
+    description: 'Breathable athletic tank',
+    sizes: ['S', 'M', 'L', 'XL'],
+    colors: [
+      { name: 'White', hex: '#FFFFFF' },
+      { name: 'Black', hex: '#000000' },
+      { name: 'Grey', hex: '#808080' },
+      { name: 'Navy', hex: '#000080' }
+    ]
+  },
+  {
+    id: 'flannel-001',
+    name: 'Flannel Shirt',
+    category: 'tops',
+    brand: 'Vogue Outdoors',
+    price: 75.99,
+    image: '/images/clothing/flannel.png',
+    thumbnailColor: '#8B0000',
+    description: 'Classic plaid flannel shirt',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: [
+      { name: 'Red Plaid', hex: '#8B0000' },
+      { name: 'Blue Plaid', hex: '#000080' },
+      { name: 'Green Plaid', hex: '#006400' },
+      { name: 'Black Plaid', hex: '#000000' }
+    ]
+  },
+
+  // ========== OUTERWEAR (7 items) ==========
+  {
     id: 'jacket-001',
     name: 'Leather Jacket',
     category: 'outerwear',
@@ -125,6 +233,93 @@ const CLOTHING_CATALOG: ClothingItem[] = [
       { name: 'Black', hex: '#000000' }
     ]
   },
+  {
+    id: 'blazer-001',
+    name: 'Tailored Blazer',
+    category: 'outerwear',
+    brand: 'Vogue Professional',
+    price: 299.99,
+    image: '/images/clothing/blazer.png',
+    thumbnailColor: '#191970',
+    description: 'Sharp tailored blazer',
+    sizes: ['XS', 'S', 'M', 'L', 'XL'],
+    colors: [
+      { name: 'Navy', hex: '#191970' },
+      { name: 'Black', hex: '#000000' },
+      { name: 'Charcoal', hex: '#36454F' },
+      { name: 'Camel', hex: '#C19A6B' }
+    ]
+  },
+  {
+    id: 'bomber-001',
+    name: 'Bomber Jacket',
+    category: 'outerwear',
+    brand: 'Vogue Street',
+    price: 179.99,
+    image: '/images/clothing/bomber.png',
+    thumbnailColor: '#2F4F4F',
+    description: 'Classic bomber jacket',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: [
+      { name: 'Olive', hex: '#556B2F' },
+      { name: 'Black', hex: '#000000' },
+      { name: 'Navy', hex: '#000080' },
+      { name: 'Burgundy', hex: '#800020' }
+    ]
+  },
+  {
+    id: 'parka-001',
+    name: 'Winter Parka',
+    category: 'outerwear',
+    brand: 'Vogue Winter',
+    price: 399.99,
+    image: '/images/clothing/parka.png',
+    thumbnailColor: '#000000',
+    description: 'Heavy-duty winter parka',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: [
+      { name: 'Black', hex: '#000000' },
+      { name: 'Navy', hex: '#000080' },
+      { name: 'Olive', hex: '#556B2F' },
+      { name: 'Grey', hex: '#808080' }
+    ]
+  },
+  {
+    id: 'windbreaker-001',
+    name: 'Windbreaker Jacket',
+    category: 'outerwear',
+    brand: 'Vogue Active',
+    price: 89.99,
+    image: '/images/clothing/windbreaker.png',
+    thumbnailColor: '#FF4500',
+    description: 'Lightweight windbreaker',
+    sizes: ['S', 'M', 'L', 'XL'],
+    colors: [
+      { name: 'Orange', hex: '#FF4500' },
+      { name: 'Royal Blue', hex: '#4169E1' },
+      { name: 'Black', hex: '#000000' },
+      { name: 'Yellow', hex: '#FFD700' }
+    ]
+  },
+  {
+    id: 'peacoat-001',
+    name: 'Wool Peacoat',
+    category: 'outerwear',
+    brand: 'Vogue Classic',
+    price: 279.99,
+    image: '/images/clothing/peacoat.png',
+    thumbnailColor: '#000080',
+    description: 'Traditional wool peacoat',
+    sizes: ['S', 'M', 'L', 'XL'],
+    colors: [
+      { name: 'Navy', hex: '#000080' },
+      { name: 'Black', hex: '#000000' },
+      { name: 'Grey', hex: '#808080' },
+      { name: 'Camel', hex: '#C19A6B' }
+    ]
+  },
+
+  // ========== BOTTOMS (8 items) ==========
   {
     id: 'pants-001',
     name: 'Tailored Pants',
@@ -173,6 +368,213 @@ const CLOTHING_CATALOG: ClothingItem[] = [
       { name: 'Navy', hex: '#000080' },
       { name: 'Olive', hex: '#556B2F' },
       { name: 'Black', hex: '#000000' }
+    ]
+  },
+  {
+    id: 'jeans-002',
+    name: 'Straight Leg Jeans',
+    category: 'bottoms',
+    brand: 'Vogue Denim',
+    price: 109.99,
+    image: '/images/clothing/straight-jeans.png',
+    thumbnailColor: '#4682B4',
+    description: 'Classic straight leg denim',
+    sizes: ['28', '30', '32', '34', '36', '38'],
+    colors: [
+      { name: 'Medium Blue', hex: '#4682B4' },
+      { name: 'Dark Blue', hex: '#191970' },
+      { name: 'Black', hex: '#000000' },
+      { name: 'Light Wash', hex: '#87CEEB' }
+    ]
+  },
+  {
+    id: 'shorts-001',
+    name: 'Casual Shorts',
+    category: 'bottoms',
+    brand: 'Vogue Summer',
+    price: 59.99,
+    image: '/images/clothing/shorts.png',
+    thumbnailColor: '#D2B48C',
+    description: 'Comfortable summer shorts',
+    sizes: ['28', '30', '32', '34', '36'],
+    colors: [
+      { name: 'Khaki', hex: '#D2B48C' },
+      { name: 'Navy', hex: '#000080' },
+      { name: 'Grey', hex: '#808080' },
+      { name: 'Olive', hex: '#556B2F' }
+    ]
+  },
+  {
+    id: 'joggers-001',
+    name: 'Athletic Joggers',
+    category: 'bottoms',
+    brand: 'Vogue Active',
+    price: 69.99,
+    image: '/images/clothing/joggers.png',
+    thumbnailColor: '#2F4F4F',
+    description: 'Comfortable athletic joggers',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: [
+      { name: 'Charcoal', hex: '#2F4F4F' },
+      { name: 'Black', hex: '#000000' },
+      { name: 'Navy', hex: '#000080' },
+      { name: 'Grey', hex: '#808080' }
+    ]
+  },
+  {
+    id: 'cargo-001',
+    name: 'Cargo Pants',
+    category: 'bottoms',
+    brand: 'Vogue Utility',
+    price: 89.99,
+    image: '/images/clothing/cargo.png',
+    thumbnailColor: '#556B2F',
+    description: 'Functional cargo pants',
+    sizes: ['28', '30', '32', '34', '36', '38'],
+    colors: [
+      { name: 'Olive', hex: '#556B2F' },
+      { name: 'Black', hex: '#000000' },
+      { name: 'Khaki', hex: '#D2B48C' },
+      { name: 'Grey', hex: '#808080' }
+    ]
+  },
+  {
+    id: 'sweatpants-001',
+    name: 'Comfort Sweatpants',
+    category: 'bottoms',
+    brand: 'Vogue Lounge',
+    price: 65.99,
+    image: '/images/clothing/sweatpants.png',
+    thumbnailColor: '#696969',
+    description: 'Ultra-soft sweatpants',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: [
+      { name: 'Grey', hex: '#696969' },
+      { name: 'Black', hex: '#000000' },
+      { name: 'Navy', hex: '#000080' },
+      { name: 'Burgundy', hex: '#800020' }
+    ]
+  },
+
+  // ========== DRESSES (4 items) ==========
+  {
+    id: 'dress-001',
+    name: 'Summer Maxi Dress',
+    category: 'dresses',
+    brand: 'Vogue Summer',
+    price: 149.99,
+    image: '/images/clothing/maxi-dress.png',
+    thumbnailColor: '#FF6B9D',
+    description: 'Flowing summer maxi dress',
+    sizes: ['XS', 'S', 'M', 'L', 'XL'],
+    colors: [
+      { name: 'Coral', hex: '#FF6B9D' },
+      { name: 'Sky Blue', hex: '#87CEEB' },
+      { name: 'White', hex: '#FFFFFF' },
+      { name: 'Mint', hex: '#98FF98' }
+    ]
+  },
+  {
+    id: 'dress-002',
+    name: 'Cocktail Dress',
+    category: 'dresses',
+    brand: 'Vogue Evening',
+    price: 249.99,
+    image: '/images/clothing/cocktail-dress.png',
+    thumbnailColor: '#000000',
+    description: 'Elegant cocktail dress',
+    sizes: ['XS', 'S', 'M', 'L', 'XL'],
+    colors: [
+      { name: 'Black', hex: '#000000' },
+      { name: 'Navy', hex: '#000080' },
+      { name: 'Burgundy', hex: '#800020' },
+      { name: 'Emerald', hex: '#50C878' }
+    ]
+  },
+  {
+    id: 'dress-003',
+    name: 'Casual Sundress',
+    category: 'dresses',
+    brand: 'Vogue Casual',
+    price: 89.99,
+    image: '/images/clothing/sundress.png',
+    thumbnailColor: '#FFD700',
+    description: 'Light and breezy sundress',
+    sizes: ['XS', 'S', 'M', 'L', 'XL'],
+    colors: [
+      { name: 'Yellow', hex: '#FFD700' },
+      { name: 'Coral', hex: '#FF7F50' },
+      { name: 'Lavender', hex: '#E6E6FA' },
+      { name: 'White', hex: '#FFFFFF' }
+    ]
+  },
+  {
+    id: 'dress-004',
+    name: 'Shirt Dress',
+    category: 'dresses',
+    brand: 'Vogue Chic',
+    price: 129.99,
+    image: '/images/clothing/shirt-dress.png',
+    thumbnailColor: '#4682B4',
+    description: 'Classic shirt dress style',
+    sizes: ['XS', 'S', 'M', 'L', 'XL'],
+    colors: [
+      { name: 'Denim Blue', hex: '#4682B4' },
+      { name: 'White', hex: '#FFFFFF' },
+      { name: 'Black', hex: '#000000' },
+      { name: 'Olive', hex: '#556B2F' }
+    ]
+  },
+
+  // ========== ACCESSORIES (3 items) ==========
+  {
+    id: 'scarf-001',
+    name: 'Silk Scarf',
+    category: 'accessories',
+    brand: 'Vogue Luxury',
+    price: 79.99,
+    image: '/images/clothing/scarf.png',
+    thumbnailColor: '#8B4513',
+    description: 'Elegant silk scarf',
+    sizes: ['One Size'],
+    colors: [
+      { name: 'Burgundy', hex: '#800020' },
+      { name: 'Navy', hex: '#000080' },
+      { name: 'Camel', hex: '#C19A6B' },
+      { name: 'Black', hex: '#000000' }
+    ]
+  },
+  {
+    id: 'belt-001',
+    name: 'Leather Belt',
+    category: 'accessories',
+    brand: 'Vogue Essentials',
+    price: 59.99,
+    image: '/images/clothing/belt.png',
+    thumbnailColor: '#654321',
+    description: 'Premium leather belt',
+    sizes: ['S', 'M', 'L', 'XL'],
+    colors: [
+      { name: 'Brown', hex: '#654321' },
+      { name: 'Black', hex: '#000000' },
+      { name: 'Tan', hex: '#D2B48C' }
+    ]
+  },
+  {
+    id: 'tie-001',
+    name: 'Silk Tie',
+    category: 'accessories',
+    brand: 'Vogue Professional',
+    price: 45.99,
+    image: '/images/clothing/tie.png',
+    thumbnailColor: '#191970',
+    description: 'Classic silk tie',
+    sizes: ['One Size'],
+    colors: [
+      { name: 'Navy', hex: '#191970' },
+      { name: 'Burgundy', hex: '#800020' },
+      { name: 'Black', hex: '#000000' },
+      { name: 'Grey', hex: '#808080' }
     ]
   }
 ];
@@ -606,12 +1008,13 @@ export default function TryOnPage() {
   );
 
   const categories = [
-    { id: 'all', label: 'All', icon: '👗' },
-    { id: 'tops', label: 'Tops', icon: '👕' },
-    { id: 'outerwear', label: 'Jackets', icon: '🧥' },
-    { id: 'bottoms', label: 'Bottoms', icon: '👖' }
-  ];
-
+  { id: 'all', label: 'All', icon: '👗' },
+  { id: 'tops', label: 'Tops', icon: '👕' },
+  { id: 'outerwear', label: 'Jackets', icon: '🧥' },
+  { id: 'bottoms', label: 'Bottoms', icon: '👖' },
+  { id: 'dresses', label: 'Dresses', icon: '👗' },
+  { id: 'accessories', label: 'Accessories', icon: '👔' }
+];
   if (!avatarUrl) return null;
 
   return (
