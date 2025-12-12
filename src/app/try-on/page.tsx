@@ -1,8 +1,9 @@
+// FORCE COLOR VERSION - Removes textures so colors show up!
 // Save this as: src/app/try-on/page.tsx
 
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAvatar } from '../context/AvatarContext';
 import * as THREE from 'three';
@@ -20,8 +21,6 @@ interface ClothingItem {
   description: string;
   sizes: string[];
   colors: { name: string; hex: string }[];
-  rpmOutfitId?: string;
-  overlayImage?: string;
 }
 
 const CLOTHING_CATALOG: ClothingItem[] = [
@@ -32,62 +31,98 @@ const CLOTHING_CATALOG: ClothingItem[] = [
     brand: 'Vogue Essentials',
     price: 89.99,
     image: '/images/clothing/white-shirt.png',
-    overlayImage: "/images/overlays/shirt1.png",
     thumbnailColor: '#FFFFFF',
-    description: 'Timeless white button-down shirt in premium cotton',
+    description: 'Timeless white button-down shirt',
     sizes: ['XS', 'S', 'M', 'L', 'XL'],
     colors: [
       { name: 'White', hex: '#FFFFFF' },
       { name: 'Black', hex: '#000000' },
-      { name: 'Navy', hex: '#000080' }
+      { name: 'Navy', hex: '#000080' },
+      { name: 'Red', hex: '#FF0000' }
     ]
   },
   {
-    id: 'blouse-001',
-    name: 'Silk Blouse',
+    id: 'tshirt-001',
+    name: 'Premium Cotton Tee',
     category: 'tops',
-    brand: 'Vogue Luxe',
-    price: 129.99,
-    image: '/images/clothing/silk-blouse.png',
-    thumbnailColor: '#F5E6D3',
-    description: 'Elegant silk blouse with pearl buttons',
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
+    brand: 'Vogue Basics',
+    price: 45.99,
+    image: '/images/clothing/cotton-tee.png',
+    thumbnailColor: '#808080',
+    description: 'Soft premium cotton t-shirt',
+    sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
     colors: [
-      { name: 'Cream', hex: '#F5E6D3' },
-      { name: 'Burgundy', hex: '#800020' },
-      { name: 'Emerald', hex: '#50C878' }
+      { name: 'Grey', hex: '#808080' },
+      { name: 'White', hex: '#FFFFFF' },
+      { name: 'Black', hex: '#000000' },
+      { name: 'Navy', hex: '#000080' },
+      { name: 'Olive', hex: '#556B2F' }
     ]
   },
   {
-    id: 'dress-001',
-    name: 'Evening Gown',
-    category: 'dresses',
-    brand: 'Vogue Couture',
-    price: 299.99,
-    image: '/images/clothing/evening-gown.png',
-    thumbnailColor: '#000000',
-    description: 'Stunning floor-length evening gown',
-    sizes: ['XS', 'S', 'M', 'L', 'XL'],
+    id: 'hoodie-001',
+    name: 'Classic Hoodie',
+    category: 'tops',
+    brand: 'Vogue Street',
+    price: 79.99,
+    image: '/images/clothing/hoodie.png',
+    thumbnailColor: '#2C2C2C',
+    description: 'Comfortable pullover hoodie',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
     colors: [
+      { name: 'Charcoal', hex: '#2C2C2C' },
+      { name: 'Navy', hex: '#000080' },
+      { name: 'Burgundy', hex: '#800020' },
+      { name: 'Forest Green', hex: '#228B22' }
+    ]
+  },
+  {
+    id: 'polo-001',
+    name: 'Polo Shirt',
+    category: 'tops',
+    brand: 'Vogue Sport',
+    price: 65.99,
+    image: '/images/clothing/polo.png',
+    thumbnailColor: '#003366',
+    description: 'Classic polo shirt',
+    sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+    colors: [
+      { name: 'Navy', hex: '#003366' },
+      { name: 'White', hex: '#FFFFFF' },
       { name: 'Black', hex: '#000000' },
-      { name: 'Red', hex: '#FF0000' },
-      { name: 'Gold', hex: '#FFD700' }
+      { name: 'Red', hex: '#DC143C' }
     ]
   },
   {
     id: 'jacket-001',
     name: 'Leather Jacket',
     category: 'outerwear',
-    brand: 'Vogue Street',
-    price: 249.99,
+    brand: 'Vogue Rebel',
+    price: 349.99,
     image: '/images/clothing/leather-jacket.png',
     thumbnailColor: '#000000',
     description: 'Classic leather biker jacket',
     sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
     colors: [
       { name: 'Black', hex: '#000000' },
-      { name: 'Brown', hex: '#8B4513' },
+      { name: 'Brown', hex: '#654321' },
       { name: 'Burgundy', hex: '#800020' }
+    ]
+  },
+  {
+    id: 'jacket-002',
+    name: 'Denim Jacket',
+    category: 'outerwear',
+    brand: 'Vogue Denim',
+    price: 129.99,
+    image: '/images/clothing/denim-jacket.png',
+    thumbnailColor: '#4682B4',
+    description: 'Classic denim jacket',
+    sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+    colors: [
+      { name: 'Light Blue', hex: '#4682B4' },
+      { name: 'Dark Blue', hex: '#191970' },
+      { name: 'Black', hex: '#000000' }
     ]
   },
   {
@@ -103,7 +138,41 @@ const CLOTHING_CATALOG: ClothingItem[] = [
     colors: [
       { name: 'Charcoal', hex: '#36454F' },
       { name: 'Navy', hex: '#000080' },
+      { name: 'Black', hex: '#000000' },
       { name: 'Tan', hex: '#D2B48C' }
+    ]
+  },
+  {
+    id: 'jeans-001',
+    name: 'Slim Fit Jeans',
+    category: 'bottoms',
+    brand: 'Vogue Denim',
+    price: 99.99,
+    image: '/images/clothing/slim-jeans.png',
+    thumbnailColor: '#1E3A8A',
+    description: 'Modern slim fit jeans',
+    sizes: ['28', '30', '32', '34', '36', '38'],
+    colors: [
+      { name: 'Dark Blue', hex: '#1E3A8A' },
+      { name: 'Black', hex: '#000000' },
+      { name: 'Light Blue', hex: '#4682B4' }
+    ]
+  },
+  {
+    id: 'chinos-001',
+    name: 'Chino Pants',
+    category: 'bottoms',
+    brand: 'Vogue Casual',
+    price: 79.99,
+    image: '/images/clothing/chinos.png',
+    thumbnailColor: '#D2B48C',
+    description: 'Comfortable chino pants',
+    sizes: ['28', '30', '32', '34', '36', '38'],
+    colors: [
+      { name: 'Khaki', hex: '#D2B48C' },
+      { name: 'Navy', hex: '#000080' },
+      { name: 'Olive', hex: '#556B2F' },
+      { name: 'Black', hex: '#000000' }
     ]
   }
 ];
@@ -118,9 +187,9 @@ export default function TryOnPage() {
   const avatarRef = useRef<THREE.Group | null>(null);
   const controlsRef = useRef<OrbitControls | null>(null);
   const animationFrameRef = useRef<number | null>(null);
-  const clothingPlaneRef = useRef<THREE.Mesh | null>(null);
   const mountedRef = useRef<boolean>(false);
   const autoRotateRef = useRef<boolean>(false);
+  const originalMaterialsRef = useRef<Map<string, THREE.Material | THREE.Material[]>>(new Map());
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -131,7 +200,6 @@ export default function TryOnPage() {
   const [autoRotate, setAutoRotate] = useState(false);
   const [showClothing, setShowClothing] = useState(false);
 
-  // Sync state to ref
   useEffect(() => {
     autoRotateRef.current = autoRotate;
   }, [autoRotate]);
@@ -142,7 +210,134 @@ export default function TryOnPage() {
     }
   }, [avatarUrl, router]);
 
-  // Initialize Three.js scene
+  const storeOriginalMaterials = useCallback((avatar: THREE.Group) => {
+    avatar.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        // Clone the material properly
+        if (Array.isArray(child.material)) {
+          const materials = child.material as THREE.Material[];
+          originalMaterialsRef.current.set(child.uuid, materials.map(m => m.clone()));
+        } else {
+          originalMaterialsRef.current.set(child.uuid, (child.material as THREE.Material).clone());
+        }
+        console.log(`💾 Stored original material for: ${child.name}`);
+      }
+    });
+  }, []);
+
+  // FORCE COLOR - Remove textures and apply pure color!
+  const applyClothingToAvatar = useCallback((item: ClothingItem, color: string) => {
+    if (!avatarRef.current) {
+      console.warn('⚠️ Avatar not loaded yet');
+      return;
+    }
+
+    console.log('🎨 FORCING color:', item.name, 'Color:', color);
+    let materialApplied = false;
+
+    avatarRef.current.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        const meshName = child.name;
+        let shouldApplyMaterial = false;
+
+        switch (item.category) {
+          case 'tops':
+          case 'outerwear':
+            shouldApplyMaterial = meshName === 'Wolf3D_Outfit_Top';
+            break;
+            
+          case 'bottoms':
+            shouldApplyMaterial = meshName === 'Wolf3D_Outfit_Bottom';
+            break;
+            
+          case 'dresses':
+            shouldApplyMaterial = 
+              meshName === 'Wolf3D_Outfit_Top' || 
+              meshName === 'Wolf3D_Outfit_Bottom';
+            break;
+        }
+
+        if (shouldApplyMaterial) {
+          materialApplied = true;
+          
+          // FORCE: Create completely new material with NO TEXTURES
+          const newMaterial = new THREE.MeshStandardMaterial({
+            color: new THREE.Color(color),
+            roughness: 0.8,
+            metalness: 0.1,
+            side: THREE.FrontSide,
+            // CRITICAL: Remove all texture maps
+            map: null,
+            normalMap: null,
+            roughnessMap: null,
+            metalnessMap: null,
+            aoMap: null,
+            emissiveMap: null,
+            alphaMap: null,
+          });
+          
+          // Dispose old material first
+          if (Array.isArray(child.material)) {
+            const materials = child.material as THREE.Material[];
+            materials.forEach(m => {
+              const mat = m as any;
+              if (mat.map) mat.map.dispose();
+              m.dispose();
+            });
+          } else {
+            const mat = child.material as any;
+            if (mat.map) mat.map.dispose();
+            (child.material as THREE.Material).dispose();
+          }
+          
+          // Apply new material
+          child.material = newMaterial;
+          child.material.needsUpdate = true;
+          
+          console.log(`✅ FORCED color ${color} to ${meshName}`);
+        }
+      }
+    });
+
+    if (!materialApplied) {
+      console.warn(`❌ No matching mesh found for category: ${item.category}`);
+    } else {
+      setShowClothing(true);
+    }
+  }, []);
+
+  const restoreOriginalMaterials = useCallback(() => {
+    if (!avatarRef.current) return;
+
+    avatarRef.current.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        const originalMaterial = originalMaterialsRef.current.get(child.uuid);
+        if (originalMaterial) {
+          // Dispose current material
+          if (Array.isArray(child.material)) {
+            const materials = child.material as THREE.Material[];
+            materials.forEach(m => m.dispose());
+          } else {
+            (child.material as THREE.Material).dispose();
+          }
+          
+          // Restore original (clone it again to avoid reference issues)
+          if (Array.isArray(originalMaterial)) {
+            const origMaterials = originalMaterial as THREE.Material[];
+            child.material = origMaterials.map(m => m.clone());
+          } else {
+            child.material = (originalMaterial as THREE.Material).clone();
+          }
+          
+          child.material.needsUpdate = true;
+          console.log(`🔄 Restored original material for: ${child.name}`);
+        }
+      }
+    });
+
+    setShowClothing(false);
+  }, []);
+
   useEffect(() => {
     if (!containerRef.current || !avatarUrl || mountedRef.current) return;
 
@@ -162,51 +357,35 @@ export default function TryOnPage() {
     cameraRef.current = camera;
 
     const renderer = new THREE.WebGLRenderer({
-  antialias: true,
-  alpha: false,
-  preserveDrawingBuffer: true,
-});
+      antialias: true,
+      alpha: false,
+      preserveDrawingBuffer: true,
+    });
 
-// size & pixel ratio
-renderer.setSize(width, height);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-renderer.setClearColor(0x1a0b15);
-
-// 🔥 important: make GLB look like RPM
-// for new Three.js:
-(renderer as any).outputColorSpace = THREE.SRGBColorSpace;
-
-// tone mapping similar to RPM
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.1;
-
-// optional but helps PBR materials
-// renderer.physicallyCorrectLights = true;
-// renderer.shadowMap.enabled = true; // if you add shadows later
-
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setClearColor(0x1a0b15);
+    (renderer as any).outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
     
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // brighter ambient
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
-scene.add(ambientLight);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+    scene.add(ambientLight);
 
-// soft sky/ground light
-const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.7);
-hemiLight.position.set(0, 3, 0);
-scene.add(hemiLight);
+    const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.7);
+    hemiLight.position.set(0, 3, 0);
+    scene.add(hemiLight);
 
-// key light
-const mainLight = new THREE.DirectionalLight(0xffffff, 1.6);
-mainLight.position.set(3, 5, 5);
-scene.add(mainLight);
+    const mainLight = new THREE.DirectionalLight(0xffffff, 1.6);
+    mainLight.position.set(3, 5, 5);
+    scene.add(mainLight);
 
-// rim/back light for outline
-const rimLight = new THREE.DirectionalLight(0xffffff, 0.8);
-rimLight.position.set(-3, 4, -3);
-scene.add(rimLight);
-
+    const rimLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    rimLight.position.set(-3, 4, -3);
+    scene.add(rimLight);
 
     const groundGeometry = new THREE.CircleGeometry(3, 32);
     const groundMaterial = new THREE.MeshStandardMaterial({
@@ -237,19 +416,11 @@ scene.add(rimLight);
       (gltf) => {
         if (!mountedRef.current) return;
         
-        console.log('✅ Avatar loaded');
+        console.log('✅ Avatar loaded successfully');
         
         const avatar = gltf.scene;
-        avatar.traverse((child: any) => {
-      if (child.isMesh && typeof child.name === 'string') {
-        // Ready Player Me tops usually have names like "Wolf3D_Outfit_Top"
-        if (child.name.includes('Outfit_Top')) {
-          const mat = child.material as THREE.Material & { opacity?: number; transparent?: boolean };
-          mat.transparent = true;
-          (mat.opacity as number) = 0.15; // or 0 for fully invisible
-        }
-      }
-    });
+        storeOriginalMaterials(avatar);
+
         const box = new THREE.Box3().setFromObject(avatar);
         const size = box.getSize(new THREE.Vector3());
         const center = box.getCenter(new THREE.Vector3());
@@ -330,6 +501,16 @@ scene.add(rimLight);
         });
       }
 
+      originalMaterialsRef.current.forEach((material) => {
+        if (Array.isArray(material)) {
+          const materials = material as THREE.Material[];
+          materials.forEach(m => m.dispose());
+        } else {
+          (material as THREE.Material).dispose();
+        }
+      });
+      originalMaterialsRef.current.clear();
+
       if (rendererRef.current) {
         rendererRef.current.dispose();
         const canvas = rendererRef.current.domElement;
@@ -343,139 +524,30 @@ scene.add(rimLight);
       cameraRef.current = null;
       rendererRef.current = null;
     };
-  }, [avatarUrl, router]);
+  }, [avatarUrl, router, storeOriginalMaterials]);
 
-  const applyClothingOverlay = (item: ClothingItem, color: string) => {
-  if (!sceneRef.current || !avatarRef.current) return;
-
-  // Remove previous overlay
-  if (clothingPlaneRef.current) {
-    sceneRef.current.remove(clothingPlaneRef.current);
-    clothingPlaneRef.current.geometry.dispose();
-    if (Array.isArray(clothingPlaneRef.current.material)) {
-      clothingPlaneRef.current.material.forEach((m) => m.dispose());
-    } else {
-      clothingPlaneRef.current.material.dispose();
-    }
-    clothingPlaneRef.current = null;
-  }
-
-  const box = new THREE.Box3().setFromObject(avatarRef.current);
-  const size = box.getSize(new THREE.Vector3());
-  const center = box.getCenter(new THREE.Vector3());
-
-  // Base dimensions + vertical offset by category
-  let width = size.x * 0.6;
-  let height = size.y * 0.4;
-  let yOffset = size.y * 0.15;
-
-  switch (item.category) {
-    case 'tops':
-      width = size.x * 0.55;
-      height = size.y * 0.45;
-      yOffset = size.y * 0.15;
-      break;
-    case 'bottoms':
-      width = size.x * 0.5;
-      height = size.y * 0.45;
-      yOffset = -size.y * 0.1;
-      break;
-    case 'dresses':
-      width = size.x * 0.6;
-      height = size.y * 0.8;
-      yOffset = 0;
-      break;
-    case 'outerwear':
-      width = size.x * 0.6;
-      height = size.y * 0.5;
-      yOffset = size.y * 0.15;
-      break;
-    case 'accessories':
-      width = size.x * 0.3;
-      height = size.y * 0.2;
-      yOffset = size.y * 0.35;
-      break;
-  }
-
-  // Prefer overlayImage, then fallback to normal product image
-  const texturePath = item.overlayImage || item.image;
-
-  if (texturePath) {
-    const textureLoader = new THREE.TextureLoader();
-const texturePath = item.overlayImage || item.image; // prefer overlay
-
-textureLoader.load(texturePath, (texture) => {
-  const img = texture.image as HTMLImageElement;
-  const aspect = img.width / img.height || 1;
-
-  const planeWidth = width;
-  const planeHeight = planeWidth / aspect;
-
-  const geometry = new THREE.PlaneGeometry(planeWidth, planeHeight);
-  const material = new THREE.MeshBasicMaterial({
-    map: texture,
-    transparent: true,
-    side: THREE.DoubleSide,
-  });
-
-  const clothingPlane = new THREE.Mesh(geometry, material);
-  clothingPlane.position.set(center.x, center.y + yOffset, box.max.z + 0.02);
-
-  sceneRef.current!.add(clothingPlane);
-  clothingPlaneRef.current = clothingPlane;
-  setShowClothing(true);
-});
-
-  } else {
-    // No images at all, keep old colored overlay
-    const geometry = new THREE.PlaneGeometry(width, height);
-    const material = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(color),
-      transparent: true,
-      opacity: 0.75,
-      side: THREE.DoubleSide,
-    });
-    const clothingPlane = new THREE.Mesh(geometry, material);
-    clothingPlane.position.set(center.x, center.y + yOffset, box.max.z + 0.02);
-
-    sceneRef.current.add(clothingPlane);
-    clothingPlaneRef.current = clothingPlane;
-    setShowClothing(true);
-  }
-};
-
-
-
-  const handleSelectItem = (item: ClothingItem) => {
+  const handleSelectItem = useCallback((item: ClothingItem) => {
     setSelectedItem(item);
     setSelectedColor(item.colors[0].hex);
     setSelectedSize(item.sizes[0]);
-    applyClothingOverlay(item, item.colors[0].hex);
-  };
+    applyClothingToAvatar(item, item.colors[0].hex);
+  }, [applyClothingToAvatar]);
 
-  const handleColorChange = (color: string) => {
+  const handleColorChange = useCallback((color: string) => {
     setSelectedColor(color);
     if (selectedItem) {
-      applyClothingOverlay(selectedItem, color);
+      applyClothingToAvatar(selectedItem, color);
     }
-  };
+  }, [selectedItem, applyClothingToAvatar]);
 
-  const handleRemoveClothing = () => {
-    if (clothingPlaneRef.current && sceneRef.current) {
-      sceneRef.current.remove(clothingPlaneRef.current);
-      clothingPlaneRef.current.geometry.dispose();
-      if (Array.isArray(clothingPlaneRef.current.material)) {
-        clothingPlaneRef.current.material.forEach(m => m.dispose());
-      } else {
-        clothingPlaneRef.current.material.dispose();
-      }
-      clothingPlaneRef.current = null;
-      setShowClothing(false);
-      setSelectedItem(null);
-    }
-  };
+  const handleRemoveClothing = useCallback(() => {
+    restoreOriginalMaterials();
+    setSelectedItem(null);
+    setSelectedColor('');
+    setSelectedSize('');
+  }, [restoreOriginalMaterials]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = useCallback(() => {
     if (!selectedItem || !selectedColor || !selectedSize) {
       alert('Please select color and size');
       return;
@@ -515,28 +587,29 @@ textureLoader.load(texturePath, (texture) => {
     window.dispatchEvent(new Event('cartUpdated'));
     
     alert(`✅ Added ${selectedItem.name} to cart!`);
-  };
+  }, [selectedItem, selectedColor, selectedSize, avatarUrl]);
 
-  const handleCapturePhoto = () => {
+  const handleCapturePhoto = useCallback(() => {
     if (!rendererRef.current) return;
     const dataURL = rendererRef.current.domElement.toDataURL('image/png');
     const link = document.createElement('a');
     link.download = `vogue-tryon-${Date.now()}.png`;
     link.href = dataURL;
     link.click();
-  };
+  }, []);
 
-  const filteredCatalog = selectedCategory === 'all'
-    ? CLOTHING_CATALOG
-    : CLOTHING_CATALOG.filter(item => item.category === selectedCategory);
+  const filteredCatalog = useMemo(() => 
+    selectedCategory === 'all'
+      ? CLOTHING_CATALOG
+      : CLOTHING_CATALOG.filter(item => item.category === selectedCategory),
+    [selectedCategory]
+  );
 
   const categories = [
     { id: 'all', label: 'All', icon: '👗' },
-    { id: 'tops', label: 'Tops', icon: '👔' },
-    { id: 'bottoms', label: 'Bottoms', icon: '👖' },
-    { id: 'dresses', label: 'Dresses', icon: '👗' },
-    { id: 'outerwear', label: 'Outerwear', icon: '🧥' },
-    { id: 'accessories', label: 'Accessories', icon: '👒' }
+    { id: 'tops', label: 'Tops', icon: '👕' },
+    { id: 'outerwear', label: 'Jackets', icon: '🧥' },
+    { id: 'bottoms', label: 'Bottoms', icon: '👖' }
   ];
 
   if (!avatarUrl) return null;
@@ -546,10 +619,10 @@ textureLoader.load(texturePath, (texture) => {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
-            Virtual Try-On
+            Virtual Try-On Studio
           </h1>
           <p className="text-gray-300">
-            See how clothes look on your avatar in real-time
+            Browse {CLOTHING_CATALOG.length} clothing items - Pure color mode
           </p>
         </div>
 
@@ -563,7 +636,7 @@ textureLoader.load(texturePath, (texture) => {
                 <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-xl z-10">
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-                    <p className="text-white">Loading avatar...</p>
+                    <p className="text-white">Loading your avatar...</p>
                   </div>
                 </div>
               )}
@@ -614,12 +687,20 @@ textureLoader.load(texturePath, (texture) => {
 
             {selectedItem && (
               <div className="mt-4 p-4 bg-white/10 rounded-xl border border-white/20">
-                <h3 className="text-white font-bold text-lg mb-2">{selectedItem.name}</h3>
+                <div className="flex items-start justify-between mb-2">
+                  <div>
+                    <h3 className="text-white font-bold text-lg">{selectedItem.name}</h3>
+                    <p className="text-purple-300 text-sm">{selectedItem.brand}</p>
+                  </div>
+                  <p className="text-white font-bold text-xl">${selectedItem.price.toFixed(2)}</p>
+                </div>
                 <p className="text-gray-300 text-sm mb-3">{selectedItem.description}</p>
                 
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-sm text-gray-300 mb-2 font-semibold">Color:</label>
+                    <label className="block text-sm text-gray-300 mb-2 font-semibold">
+                      Color: {selectedItem.colors.find(c => c.hex === selectedColor)?.name}
+                    </label>
                     <div className="flex gap-2 flex-wrap">
                       {selectedItem.colors.map((color) => (
                         <button
@@ -668,9 +749,14 @@ textureLoader.load(texturePath, (texture) => {
           </div>
 
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
-            <h2 className="text-2xl font-bold text-white mb-4">Clothing Catalog</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">
+              Clothing Catalog
+              <span className="text-sm font-normal text-gray-300 ml-2">
+                ({filteredCatalog.length} items)
+              </span>
+            </h2>
 
-            <div className="grid grid-cols-3 gap-2 mb-4">
+            <div className="grid grid-cols-2 gap-2 mb-4">
               {categories.map((cat) => (
                 <button
                   key={cat.id}
@@ -700,7 +786,7 @@ textureLoader.load(texturePath, (texture) => {
                 >
                   <div className="flex gap-3">
                     <div
-                      className="w-16 h-16 rounded-lg flex-shrink-0"
+                      className="w-16 h-16 rounded-lg flex-shrink-0 border border-white/20"
                       style={{ backgroundColor: item.thumbnailColor }}
                     />
                     <div className="flex-1 min-w-0">
